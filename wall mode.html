@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game - Wall Mode</title>
+    <style>
+        body {
+            background-color: #eef2f7; 
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .game-container {
+            border: 2px solid #34495e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            background-color: #f9fafc;
+        }
+
+        .controls {
+            text-align: center;
+            color: #34495e;
+        }
+
+        #score {
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .menu {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .menu button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #e74c3c;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu" id="wall-menu">
+        <h2>Wall Mode - Select Difficulty</h2>
+        <button onclick="startGame(150)">Easy</button>
+        <button onclick="startGame(100)">Medium</button>
+        <button onclick="startGame(50)">Hard</button>
+    </div>
+
+    <div class="game-container" id="game-container" style="display: none;">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    
+    <div class="controls" id="controls" style="display: none;">
+        <p>Use arrow keys to play the game!</p>
+        <h3 id="score">Score: 0</h3>
+        <h4 id="speed">Speed: Normal</h4>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = 400;
+        canvas.height = 400;
+
+        const box = 20;
+        let snake, food, direction, score, speed, gameLoopInterval;
+
+        function startGame(selectedSpeed) {
+            speed = selectedSpeed;
+
+            document.getElementById("wall-menu").style.display = "none";
+            document.getElementById("game-container").style.display = "flex";
+            document.getElementById("controls").style.display = "block";
+            document.getElementById("speed").innerText = `Speed: ${speed}ms`;
+
+            resetGame();
+        }
+
+        function resetGame() {
+            snake = [{ x: box * 5, y: box * 5 }];
+            direction = "RIGHT";
+            score = 0;
+            document.getElementById("score").innerText = `Score: 0`;
+            document.getElementById("speed").innerText = `Speed: ${speed}ms`;
+            food = generateFood();
+            
+            clearInterval(gameLoopInterval);
+            gameLoopInterval = setInterval(draw, speed);
+        }
+
+        function generateFood() {
+            return {
+                x: Math.floor(Math.random() * (canvas.width / box)) * box,
+                y: Math.floor(Math.random() * (canvas.height / box)) * box
+            };
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            snake.forEach((segment, index) => {
+                ctx.fillStyle = index === 0 ? "#27ae60" : "#2ecc71";
+                ctx.fillRect(segment.x, segment.y, box, box);
+            });
+
+            ctx.fillStyle = "#e74c3c";
+            ctx.fillRect(food.x, food.y, box, box);
+
+            let head = { ...snake[0] };
+            if (direction === "UP") head.y -= box;
+            if (direction === "DOWN") head.y += box;
+            if (direction === "LEFT") head.x -= box;
+            if (direction === "RIGHT") head.x += box;
+
+            // Wall Mode: Game over when hitting the wall
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+                alert(`Game Over! You hit the wall! Score: ${score}`);
+                resetGame();
+                return;
+            }
+
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                document.getElementById("score").innerText = `Score: ${score}`;
+                food = generateFood();
+            } else {
+                snake.pop();
+            }
+
+            snake.unshift(head);
+
+            if (snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)) {
+                alert(`Game Over! Your score is ${score}.`);
+                resetGame();
+            }
+        }
+
+        document.addEventListener("keydown", event => {
+            if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+            if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+            if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+            if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+        });
+    </script>
+</body>
+</html>

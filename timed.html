@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game - Timed Sessions</title>
+    <style>
+        body {
+            background-color: #eef2f7; 
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .game-container {
+            border: 2px solid #34495e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        canvas {
+            background-color: #f9fafc;
+        }
+
+        .controls {
+            text-align: center;
+            color: #34495e;
+        }
+
+        #score, #timer {
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .difficulty-buttons {
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .difficulty-buttons button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            /* background-color: #3498db; */
+       
+            /* color: white; */
+            border-radius: 5px;
+        }
+
+        .difficulty-buttons button:hover {
+            background-color: #2980b9;
+        }
+        .easy { background-color: #6ffdaa; color: white; }
+        .medium { background-color: #fcc46a; color: white; }
+        .hard { background-color: #fb8d81; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="difficulty-buttons">
+        <h2>Select Difficulty</h2>
+        <button class="easy" onclick="setDifficulty('Easy')">Easy</button>
+        <button class="medium" onclick="setDifficulty('Medium')">Medium</button>
+        <button class="hard" onclick="setDifficulty('Hard')">Hard</button>
+    </div>
+
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    
+    <div class="controls">
+        <p>Use arrow keys to play the game!</p>
+        <h3 id="score">Score: 0</h3>
+        <h3 id="timer">Time Left: 0s</h3>
+        <h4 id="difficulty">Difficulty: Select a level</h4>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = 400;
+        canvas.height = 400;
+
+        const box = 20;
+        let snake, food, direction, score, speed, gameLoopInterval, timerInterval, difficulty, timeLeft;
+
+        function setDifficulty(level) {
+            if (level === "Easy") {
+                speed = 200;
+                timeLeft = 60; // 60 seconds
+            } else if (level === "Medium") {
+                speed = 150;
+                timeLeft = 45; // 45 seconds
+            } else if (level === "Hard") {
+                speed = 100;
+                timeLeft = 30; // 30 seconds
+            }
+
+            difficulty = level;
+            document.getElementById("difficulty").innerText = `Difficulty: ${level}`;
+            document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
+            document.querySelector(".game-container").style.display = "flex";
+            document.querySelector(".difficulty-buttons").style.display = "none";
+
+            startGame();
+        }
+
+        function startGame() {
+            score = 0;
+            document.getElementById("score").innerText = `Score: 0`;
+
+            snake = [{ x: box * 5, y: box * 5 }];
+            direction = "RIGHT";
+            food = generateFood();
+
+            clearInterval(gameLoopInterval);
+            clearInterval(timerInterval);
+            gameLoopInterval = setInterval(draw, speed);
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (timeLeft > 0) {
+                timeLeft--;
+                document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
+            } else {
+                endGame(`Time's up! Final score: ${score}`);
+            }
+        }
+
+        function generateFood() {
+            return {
+                x: Math.floor(Math.random() * (canvas.width / box)) * box,
+                y: Math.floor(Math.random() * (canvas.height / box)) * box
+            };
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Snake
+            snake.forEach((segment, index) => {
+                ctx.fillStyle = index === 0 ? "#27ae60" : "#2ecc71"; // Head and body
+                ctx.fillRect(segment.x, segment.y, box, box);
+            });
+
+            // Draw Food
+            ctx.fillStyle = "#e74c3c";
+            ctx.fillRect(food.x, food.y, box, box);
+
+            let head = { ...snake[0] };
+            if (direction === "UP") head.y -= box;
+            if (direction === "DOWN") head.y += box;
+            if (direction === "LEFT") head.x -= box;
+            if (direction === "RIGHT") head.x += box;
+
+            // Wrap around instead of dying
+            if (head.x < 0) head.x = canvas.width - box;
+            if (head.x >= canvas.width) head.x = 0;
+            if (head.y < 0) head.y = canvas.height - box;
+            if (head.y >= canvas.height) head.y = 0;
+
+            // Check if snake eats food
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                document.getElementById("score").innerText = `Score: ${score}`;
+                food = generateFood();
+            } else {
+                snake.pop();
+            }
+
+            // Add new head to snake
+            snake.unshift(head);
+
+            // Check collision with itself
+            if (snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)) {
+                endGame(`Game Over! You collided with yourself. Final score: ${score}`);
+            }
+        }
+
+        function endGame(message) {
+            clearInterval(gameLoopInterval);
+            clearInterval(timerInterval);
+            alert(message);
+            resetGame();
+        }
+
+        function resetGame() {
+            document.querySelector(".game-container").style.display = "none";
+            document.querySelector(".difficulty-buttons").style.display = "flex";
+        }
+
+        document.addEventListener("keydown", event => {
+            if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+            if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+            if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+            if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+        });
+
+    </script>
+</body>
+</html>

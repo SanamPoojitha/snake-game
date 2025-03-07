@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game - Challenge Mode</title>
+    <style>
+        body {
+            background-color: #eef2f7; 
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .game-container {
+            border: 2px solid #34495e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            background-color: #f9fafc;
+        }
+
+        .controls {
+            text-align: center;
+            color: #34495e;
+        }
+
+        #score {
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .menu {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .menu button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .regular { background-color: #2ecc71; color: white; }
+        .challenge { background-color: #8e44ad; color: white; }
+    </style>
+</head>
+<body>
+    <div class="menu" id="menu">
+        <h2>Choose Game Mode</h2>
+        <button class="regular" onclick="startGame(100, false)">Regular Mode</button>
+        <h2>Challenge Mode</h2>
+        <button class="challenge" onclick="selectChallengeMode()">Play Challenge Mode</button>
+    </div>
+
+    <div class="menu" id="challenge-menu" style="display: none;">
+        <h2>Select Challenge Difficulty</h2>
+        <button class="challenge" onclick="startGame(150, true)">Easy</button>
+        <button class="challenge" onclick="startGame(100, true)">Medium</button>
+        <button class="challenge" onclick="startGame(50, true)">Hard</button>
+    </div>
+
+    <div class="game-container" id="game-container" style="display: none;">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    
+    <div class="controls" id="controls" style="display: none;">
+        <p>Use arrow keys to play the game!</p>
+        <h3 id="score">Score: 0</h3>
+        <h4 id="speed">Speed: Normal</h4>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = 400;
+        canvas.height = 400;
+
+        const box = 20;
+        let snake, food, direction, score, speed, gameLoopInterval, obstacles, challengeMode, obstacleSpawnRate, speedIncrease;
+
+        function selectChallengeMode() {
+            document.getElementById("menu").style.display = "none";
+            document.getElementById("challenge-menu").style.display = "block";
+        }
+
+        function startGame(selectedSpeed, isChallenge) {
+            speed = selectedSpeed;
+            challengeMode = isChallenge;
+
+            if (challengeMode) {
+                if (speed === 150) {
+                    obstacleSpawnRate = 5;
+                    speedIncrease = 5;
+                } else if (speed === 100) {
+                    obstacleSpawnRate = 3;
+                    speedIncrease = 7;
+                } else if (speed === 50) {
+                    obstacleSpawnRate = 2;
+                    speedIncrease = 10;
+                }
+            }
+
+            document.getElementById("menu").style.display = "none";
+            document.getElementById("challenge-menu").style.display = "none";
+            document.getElementById("game-container").style.display = "flex";
+            document.getElementById("controls").style.display = "block";
+            document.getElementById("speed").innerText = `Speed: ${speed}ms`;
+
+            resetGame();
+        }
+
+        function resetGame() {
+            snake = [{ x: box * 5, y: box * 5 }];
+            direction = "RIGHT";
+            score = 0;
+            obstacles = [];
+            document.getElementById("score").innerText = `Score: 0`;
+            document.getElementById("speed").innerText = `Speed: ${speed}ms`;
+            food = generateFood();
+            
+            clearInterval(gameLoopInterval);
+            gameLoopInterval = setInterval(draw, speed);
+        }
+
+        function generateFood() {
+            let newFood;
+            do {
+                newFood = {
+                    x: Math.floor(Math.random() * (canvas.width / box)) * box,
+                    y: Math.floor(Math.random() * (canvas.height / box)) * box
+                };
+            } while (obstacles.some(obstacle => obstacle.x === newFood.x && obstacle.y === newFood.y));
+            return newFood;
+        }
+
+        function generateObstacle() {
+            if (challengeMode && obstacles.length < 10) {
+                let newObstacle;
+                do {
+                    newObstacle = {
+                        x: Math.floor(Math.random() * (canvas.width / box)) * box,
+                        y: Math.floor(Math.random() * (canvas.height / box)) * box
+                    };
+                } while (
+                    obstacles.some(obstacle => obstacle.x === newObstacle.x && obstacle.y === newObstacle.y) ||
+                    (newObstacle.x === food.x && newObstacle.y === food.y) ||
+                    snake.some(segment => segment.x === newObstacle.x && segment.y === newObstacle.y)
+                );
+                obstacles.push(newObstacle);
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            snake.forEach((segment, index) => {
+                ctx.fillStyle = index === 0 ? "#27ae60" : "#2ecc71";
+                ctx.fillRect(segment.x, segment.y, box, box);
+            });
+
+            ctx.fillStyle = "#e74c3c";
+            ctx.fillRect(food.x, food.y, box, box);
+
+            if (challengeMode) {
+                ctx.fillStyle = "#34495e";
+                obstacles.forEach(obstacle => ctx.fillRect(obstacle.x, obstacle.y, box, box));
+            }
+
+            let head = { ...snake[0] };
+            if (direction === "UP") head.y -= box;
+            if (direction === "DOWN") head.y += box;
+            if (direction === "LEFT") head.x -= box;
+            if (direction === "RIGHT") head.x += box;
+
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                document.getElementById("score").innerText = `Score: ${score}`;
+                food = generateFood();
+                if (challengeMode) {
+                    speed = Math.max(30, speed - speedIncrease);
+                    document.getElementById("speed").innerText = `Speed: ${speed}ms`;
+                    if (score % (obstacleSpawnRate * 10) === 0) generateObstacle();
+                    clearInterval(gameLoopInterval);
+                    gameLoopInterval = setInterval(draw, speed);
+                }
+            } else {
+                snake.pop();
+            }
+
+            snake.unshift(head);
+
+            if (
+                head.x < 0 || head.x >= canvas.width ||
+                head.y < 0 || head.y >= canvas.height ||
+                snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y) ||
+                obstacles.some(obstacle => obstacle.x === head.x && obstacle.y === head.y)
+            ) {
+                alert(`Game Over! Your score is ${score}.`);
+                resetGame();
+            }
+        }
+
+        document.addEventListener("keydown", event => {
+            if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+            if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+            if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+            if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+        });
+    </script>
+</body>
+</html>

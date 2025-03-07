@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game Modes</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            /* padding: 10px; */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            min-height: 100vh;
+        }
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 40px;
+            text-align: center;
+            padding: 20px 0;
+            background-color: #e7e1e1;
+            color: rgb(56, 55, 55);
+            width: 100%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 100px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        .card {
+            background: linear-gradient(135deg, #9afcff, #fad0c4);
+            border-radius: 15px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.2);
+        }
+        .card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .card h3 {
+            font-size: 1.8rem;
+            margin: 20px 0 10px;
+            color: #252424;
+        }
+        .card p {
+            font-size: 1rem;
+            color: #0b0909;
+            padding: 0 15px;
+        }
+        .card button {
+            padding: 12px 24px;
+            margin: 20px 0;
+            background-color: #a21eee;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .card button:hover {
+            background-color: #ff4e50;
+        }
+        @media (max-width: 600px) {
+            .card p {
+                font-size: 0.9rem;
+            }
+            .card button {
+                padding: 10px 20px;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="title">snake-game-challenge</div>
+
+    <div class="card-container">
+        <div class="card">
+            <img src="images/classic.png" alt="Classic Snake">
+            <h3>Classic Mode</h3>
+            <p>Experience the traditional snake game with standard rules and gameplay.</p>
+            <button onclick="startGame('classic')">Play Now</button>
+        </div>
+        <div class="card">
+            <img src="images/speed mode.png" alt="Speed Snake">
+            <h3>Speed Mode</h3>
+            <p>Fast-paced snake game where the snake moves quicker. Can you keep up?</p>
+            <button onclick="startGame('speed')">Play Now</button>
+        </div>
+        <div class="card">
+            <img src="images/wall mode.png" alt="Walls Mode">
+            <h3>Walls Mode</h3>
+            <p>Dodge obstacles and walls as you try to grow your snake in a confined space.</p>
+            <button onclick="startGame('walls')">Play Now</button>
+        </div>
+        <div class="card">
+            <img src="images/infinite mode.png" alt="Infinite Mode">
+            <h3>Infinite Mode</h3>
+            <p>Play without limits! No boundaries, just endless fun and increasing difficulty.</p>
+            <button onclick="startGame('infinite')">Play Now</button>
+        </div>
+        <div class="card">
+            <img src="images/challenge.png" alt="Challenge Mode">
+            <h3>Challenge Mode</h3>
+            <p>Test your skills with various challenges. Can you complete them all?</p>
+            <button onclick="startGame('challenge')">Play Now</button>
+        </div>
+        <div class="card">
+            <img src="images/timed.png" alt="Timed Mode">
+            <h3>Timed Mode</h3>
+            <p>Score as much as you can within a limited time. The clock is ticking!</p>
+            <button onclick="startGame('timed')">Play Now</button>
+        </div>
+    </div>
+
+    <script>
+        function startGame(mode) {
+            if (mode === 'classic') {
+                window.location.href = 'classic.html';
+            } else if (mode === 'speed') {
+                window.location.href = 'speed.html';
+            } else if (mode === 'walls') {
+                window.location.href = 'wall mode.html';
+            } else if (mode === 'infinite') {
+                window.location.href = 'infinity.html';
+            } else if (mode === 'challenge') {
+                window.location.href = 'challenge.html';
+            } else if (mode === 'timed') {
+                window.location.href = 'timed.html';
+            } else {
+                alert('Game mode not found');
+            }
+        }
+    </script>
+
+</body>
+</html>
